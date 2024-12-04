@@ -1,0 +1,119 @@
+auth:
+  tokens:
+    - token: "your-sentry-token"
+      scopes:
+        - project:read
+        - project:write
+        - project:admin
+        - team:read
+        - team:write
+        - event:read
+        - event:write
+        - org:read
+        - member:read
+
+projects:
+  nutrition-app:
+    slug: nutrition-app
+    platform: python
+    default_rules: true
+    alert_rules:
+      - name: "High Error Rate"
+        conditions:
+          - type: event_frequency
+            interval: 1h
+            frequency: 100
+        actions:
+          - type: slack
+            channel: "#alerts"
+            message: "High error rate detected in nutrition-app"
+            
+      - name: "Performance Degradation"
+        conditions:
+          - type: transaction_duration
+            interval: 5m
+            value: 1000
+        actions:
+          - type: email
+            targetType: team
+            target: backend-team
+            
+      - name: "API Errors"
+        conditions:
+          - type: event_frequency
+            interval: 5m
+            frequency: 10
+            attribute: "type:error AND url:*/api/*"
+        actions:
+          - type: slack
+            channel: "#api-alerts"
+
+teams:
+  backend-team:
+    slug: backend-team
+    access:
+      - type: project
+        resource: nutrition-app
+        role: admin
+        
+  frontend-team:
+    slug: frontend-team
+    access:
+      - type: project
+        resource: nutrition-app
+        role: member
+
+monitors:
+  - name: "API Health Check"
+    type: cron_job
+    schedule: "*/5 * * * *"
+    config:
+      url: "https://api.nutrition-app.com/health"
+      method: GET
+      timeout: 5s
+      
+  - name: "Database Metrics"
+    type: cron_job
+    schedule: "*/15 * * * *"
+    config:
+      url: "https://api.nutrition-app.com/metrics/db"
+      method: GET
+      timeout: 10s
+
+metrics:
+  tags:
+    - key: environment
+      values:
+        - production
+        - staging
+        - development
+    - key: service
+      values:
+        - api
+        - web
+        - worker
+        
+  rules:
+    - name: "Error Rate"
+      query: "sum(rate(sentry_events_total{type='error'}[5m])) by (service)"
+      period: 5m
+      warning_threshold: 0.1
+      critical_threshold: 0.5
+      
+    - name: "Response Time"
+      query: "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service))"
+      period: 5m
+      warning_threshold: 1
+      critical_threshold: 2
+
+integrations:
+  slack:
+    webhook_url: "https://hooks.slack.com/services/xxx/yyy/zzz"
+    default_channel: "#alerts"
+    
+  email:
+    from: "alerts@nutrition-app.com"
+    smtp_host: "smtp.gmail.com"
+    smtp_port: 587
+    username: "alerts@nutrition-app.com"
+    password: "your-smtp-password"

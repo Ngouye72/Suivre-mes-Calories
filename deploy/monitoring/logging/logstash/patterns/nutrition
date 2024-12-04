@@ -1,0 +1,11 @@
+NUTRITION_LOG %{TIMESTAMP_ISO8601:timestamp} \[%{LOGLEVEL:log_level}\] %{DATA:event_type} %{GREEDYDATA:message}
+
+MEAL_LOG %{NUTRITION_LOG} meal_id=%{DATA:meal_id} user_id=%{DATA:user_id} calories=%{NUMBER:calories:int} protein=%{NUMBER:protein:float}g carbs=%{NUMBER:carbs:float}g fat=%{NUMBER:fat:float}g
+
+GOAL_LOG %{NUTRITION_LOG} goal_id=%{DATA:goal_id} user_id=%{DATA:user_id} type=%{WORD:goal_type} target=%{NUMBER:target_value:float} current=%{NUMBER:current_value:float}
+
+ML_PREDICTION_LOG %{NUTRITION_LOG} prediction_id=%{DATA:prediction_id} model=%{WORD:model_name} confidence=%{NUMBER:confidence:float} duration_ms=%{NUMBER:duration:int}
+
+API_REQUEST_LOG %{NUTRITION_LOG} path="%{DATA:path}" method=%{WORD:http_method} status=%{NUMBER:status_code:int} duration_ms=%{NUMBER:duration:int} user_id=%{DATA:user_id} client_ip=%{IP:client_ip}
+
+ERROR_LOG %{NUTRITION_LOG} error_code=%{WORD:error_code} stack_trace="%{GREEDYDATA:stack_trace}"

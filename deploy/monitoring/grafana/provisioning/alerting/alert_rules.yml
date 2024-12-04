@@ -1,0 +1,139 @@
+apiVersion: 1
+
+groups:
+  - name: Infrastructure
+    folder: Infrastructure
+    interval: 1m
+    rules:
+      - name: High CPU Usage
+        condition: avg(rate(container_cpu_usage_seconds_total{container!=""}[5m])) by (container) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          team: devops
+        annotations:
+          summary: High CPU usage detected
+          description: Container {{ $labels.container }} CPU usage is above 85%
+          
+      - name: High Memory Usage
+        condition: container_memory_usage_bytes{container!=""} / container_spec_memory_limit_bytes{container!=""} * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+          team: devops
+        annotations:
+          summary: High memory usage detected
+          description: Container {{ $labels.container }} memory usage is above 90%
+          
+      - name: Service Down
+        condition: up == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: devops
+        annotations:
+          summary: Service is down
+          description: Service {{ $labels.instance }} is down
+
+  - name: Application
+    folder: Application
+    interval: 1m
+    rules:
+      - name: High API Error Rate
+        condition: sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) * 100 > 5
+        for: 5m
+        labels:
+          severity: critical
+          team: devops
+        annotations:
+          summary: High API error rate
+          description: Error rate is above 5% for the last 5 minutes
+          
+      - name: Slow API Response
+        condition: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 2
+        for: 5m
+        labels:
+          severity: warning
+          team: devops
+        annotations:
+          summary: Slow API responses
+          description: 95th percentile of API response time is above 2 seconds
+
+  - name: Business
+    folder: Business
+    interval: 5m
+    rules:
+      - name: User Registration Drop
+        condition: rate(user_registrations_total[24h]) < rate(user_registrations_total[24h] offset 24h) * 0.5
+        for: 1h
+        labels:
+          severity: warning
+          team: business
+        annotations:
+          summary: User registration rate dropped
+          description: New user registration rate has dropped by 50% compared to yesterday
+          
+      - name: High User Churn
+        condition: (sum(rate(user_deletions_total[7d])) / sum(rate(user_registrations_total[7d]))) * 100 > 10
+        for: 24h
+        labels:
+          severity: warning
+          team: business
+        annotations:
+          summary: High user churn detected
+          description: User churn rate is above 10% for the last 7 days
+
+  - name: Nutrition
+    folder: Nutrition
+    interval: 5m
+    rules:
+      - name: Low Meal Logging Rate
+        condition: rate(meals_logged_total[24h]) < rate(meals_logged_total[24h] offset 24h) * 0.7
+        for: 12h
+        labels:
+          severity: warning
+          team: nutrition
+        annotations:
+          summary: Low meal logging activity
+          description: Meal logging rate has dropped by 30% compared to yesterday
+          
+      - name: Abnormal Weight Changes
+        condition: abs(rate(user_weight_change[24h])) > 2
+        for: 24h
+        labels:
+          severity: warning
+          team: nutrition
+        annotations:
+          summary: Abnormal weight changes detected
+          description: Users reporting unusual weight changes (>2kg/day)
+
+notification_policies:
+  - name: Default
+    group_by: ['alertname', 'team']
+    group_wait: 30s
+    group_interval: 5m
+    repeat_interval: 4h
+    receiver: 'slack-notifications'
+    
+  - name: Critical
+    match:
+      severity: critical
+    group_by: ['alertname']
+    group_wait: 0s
+    group_interval: 1m
+    repeat_interval: 30m
+    receiver: 'pagerduty-critical'
+
+receivers:
+  - name: slack-notifications
+    slack_configs:
+      - channel: '#monitoring-alerts'
+        send_resolved: true
+        title: '{{ template "slack.default.title" . }}'
+        text: '{{ template "slack.default.text" . }}'
+        
+  - name: pagerduty-critical
+    pagerduty_configs:
+      - service_key: ${PAGERDUTY_SERVICE_KEY}
+        send_resolved: true
+        description: '{{ template "pagerduty.default.description" . }}'

@@ -1,0 +1,120 @@
+{
+  "Alarms": [
+    {
+      "AlarmName": "API-HighCPUUtilization",
+      "AlarmDescription": "CPU utilization is too high",
+      "MetricName": "CPUUtilization",
+      "Namespace": "AWS/ECS",
+      "Statistic": "Average",
+      "Dimensions": [
+        {
+          "Name": "ClusterName",
+          "Value": "nutrition-cluster"
+        },
+        {
+          "Name": "ServiceName",
+          "Value": "nutrition-service"
+        }
+      ],
+      "Period": 300,
+      "EvaluationPeriods": 2,
+      "Threshold": 80,
+      "ComparisonOperator": "GreaterThanThreshold",
+      "AlarmActions": ["${SNS_TOPIC_ARN}"]
+    },
+    {
+      "AlarmName": "API-HighMemoryUtilization",
+      "AlarmDescription": "Memory utilization is too high",
+      "MetricName": "MemoryUtilization",
+      "Namespace": "AWS/ECS",
+      "Statistic": "Average",
+      "Dimensions": [
+        {
+          "Name": "ClusterName",
+          "Value": "nutrition-cluster"
+        },
+        {
+          "Name": "ServiceName",
+          "Value": "nutrition-service"
+        }
+      ],
+      "Period": 300,
+      "EvaluationPeriods": 2,
+      "Threshold": 80,
+      "ComparisonOperator": "GreaterThanThreshold",
+      "AlarmActions": ["${SNS_TOPIC_ARN}"]
+    },
+    {
+      "AlarmName": "API-HighErrorRate",
+      "AlarmDescription": "Error rate is above threshold",
+      "MetricName": "HTTPCode_Target_5XX_Count",
+      "Namespace": "AWS/ApplicationELB",
+      "Statistic": "Sum",
+      "Dimensions": [
+        {
+          "Name": "LoadBalancer",
+          "Value": "${ALB_NAME}"
+        }
+      ],
+      "Period": 300,
+      "EvaluationPeriods": 2,
+      "Threshold": 10,
+      "ComparisonOperator": "GreaterThanThreshold",
+      "AlarmActions": ["${SNS_TOPIC_ARN}"]
+    },
+    {
+      "AlarmName": "API-HighLatency",
+      "AlarmDescription": "API latency is too high",
+      "MetricName": "TargetResponseTime",
+      "Namespace": "AWS/ApplicationELB",
+      "Statistic": "Average",
+      "Dimensions": [
+        {
+          "Name": "LoadBalancer",
+          "Value": "${ALB_NAME}"
+        }
+      ],
+      "Period": 300,
+      "EvaluationPeriods": 2,
+      "Threshold": 2,
+      "ComparisonOperator": "GreaterThanThreshold",
+      "AlarmActions": ["${SNS_TOPIC_ARN}"]
+    },
+    {
+      "AlarmName": "DB-HighCPUUtilization",
+      "AlarmDescription": "Database CPU utilization is too high",
+      "MetricName": "CPUUtilization",
+      "Namespace": "AWS/RDS",
+      "Statistic": "Average",
+      "Dimensions": [
+        {
+          "Name": "DBInstanceIdentifier",
+          "Value": "${DB_INSTANCE_ID}"
+        }
+      ],
+      "Period": 300,
+      "EvaluationPeriods": 2,
+      "Threshold": 80,
+      "ComparisonOperator": "GreaterThanThreshold",
+      "AlarmActions": ["${SNS_TOPIC_ARN}"]
+    },
+    {
+      "AlarmName": "Cache-CPUUtilization",
+      "AlarmDescription": "Redis CPU utilization is too high",
+      "MetricName": "CPUUtilization",
+      "Namespace": "AWS/ElastiCache",
+      "Statistic": "Average",
+      "Dimensions": [
+        {
+          "Name": "CacheClusterId",
+          "Value": "${CACHE_CLUSTER_ID}"
+        }
+      ],
+      "Period": 300,
+      "EvaluationPeriods": 2,
+      "Threshold": 80,
+      "ComparisonOperator": "GreaterThanThreshold",
+      "AlarmActions": ["${SNS_TOPIC_ARN}"]
+    }
+  ]
+}

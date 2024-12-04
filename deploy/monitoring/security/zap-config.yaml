@@ -1,0 +1,126 @@
+---
+env:
+  contexts:
+    - name: Nutrition App
+      urls:
+        - "https://nutrition-app.com"
+        - "https://api.nutrition-app.com"
+      includePaths:
+        - "https://nutrition-app.com.*"
+        - "https://api.nutrition-app.com.*"
+      excludePaths:
+        - "https://nutrition-app.com/docs.*"
+        - "https://nutrition-app.com/static.*"
+      authentication:
+        method: "form"
+        parameters:
+          loginUrl: "https://nutrition-app.com/login"
+          loginRequestData: "username={%username%}&password={%password%}"
+          loginPageValidation: "Logout"
+          logoutUrl: "https://nutrition-app.com/logout"
+
+  parameters:
+    failOnError: true
+    failOnWarning: false
+    progressToStdout: true
+
+alerts:
+  - name: "SQL Injection"
+    threshold: "Medium"
+    action: "fail"
+  - name: "Cross Site Scripting (XSS)"
+    threshold: "Medium"
+    action: "fail"
+  - name: "Insecure Direct Object References"
+    threshold: "Medium"
+    action: "fail"
+  - name: "Security Headers Missing"
+    threshold: "Low"
+    action: "warn"
+
+rules:
+  - id: 10016
+    name: "Web Browser XSS Protection Not Enabled"
+    threshold: "Low"
+  - id: 10020
+    name: "X-Frame-Options Header Not Set"
+    threshold: "Medium"
+  - id: 10021
+    name: "X-Content-Type-Options Header Missing"
+    threshold: "Low"
+  - id: 10038
+    name: "Content Security Policy (CSP) Header Not Set"
+    threshold: "Medium"
+  - id: 10202
+    name: "Absence of Anti-CSRF Tokens"
+    threshold: "Medium"
+
+scan:
+  maxDuration: 60
+  maxDepth: 10
+  maxChildren: 100
+  scanners:
+    - name: "SQL Injection"
+      enabled: true
+      threshold: "Medium"
+    - name: "Cross Site Scripting (XSS)"
+      enabled: true
+      threshold: "Medium"
+    - name: "Command Injection"
+      enabled: true
+      threshold: "High"
+    - name: "Directory Browsing"
+      enabled: true
+      threshold: "Medium"
+    - name: "External Redirect"
+      enabled: true
+      threshold: "Medium"
+    - name: "CRLF Injection"
+      enabled: true
+      threshold: "Medium"
+    - name: "Source Code Disclosure"
+      enabled: true
+      threshold: "Medium"
+    - name: "Shell Shock"
+      enabled: true
+      threshold: "High"
+    - name: "Remote File Inclusion"
+      enabled: true
+      threshold: "High"
+    - name: "Server Side Include"
+      enabled: true
+      threshold: "High"
+    - name: "Server Side Code Injection"
+      enabled: true
+      threshold: "High"
+    - name: "SQL Injection - MySQL"
+      enabled: true
+      threshold: "High"
+    - name: "SQL Injection - PostgreSQL"
+      enabled: true
+      threshold: "High"
+    - name: "SQL Injection - SQLite"
+      enabled: true
+      threshold: "High"
+    - name: "SQL Injection - MsSQL"
+      enabled: true
+      threshold: "High"
+    - name: "SQL Injection - Oracle"
+      enabled: true
+      threshold: "High"
+    - name: "Path Traversal"
+      enabled: true
+      threshold: "Medium"
+
+reporting:
+  template: "traditional-html"
+  title: "Nutrition App Security Report"
+  description: "Security assessment report for Nutrition Application"
+  risk: true
+  confidence: true
+  sections:
+    - dashboard
+    - alerts
+    - alerts-by-risk
+    - alerts-by-confidence
+    - site-tree

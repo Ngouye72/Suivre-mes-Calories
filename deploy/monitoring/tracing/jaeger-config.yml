@@ -1,0 +1,93 @@
+apiVersion: jaegertracing.io/v1
+kind: Jaeger
+metadata:
+  name: nutrition-jaeger
+spec:
+  strategy: production
+  storage:
+    type: elasticsearch
+    options:
+      es:
+        server-urls: http://elasticsearch:9200
+        username: ${ELASTIC_USER}
+        password: ${ELASTIC_PASSWORD}
+        index-prefix: jaeger-nutrition
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx
+    hosts:
+      - jaeger.nutrition-app.com
+  query:
+    options:
+      query:
+        base-path: /jaeger
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  collector:
+    options:
+      collector:
+        zipkin:
+          host-port: :9411
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  agent:
+    strategy: DaemonSet
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+  sampling:
+    options:
+      default_strategy:
+        type: probabilistic
+        param: 0.1
+      service_strategies:
+        - service: nutrition-api
+          type: probabilistic
+          param: 1.0
+        - service: user-service
+          type: probabilistic
+          param: 0.5
+        - service: meal-service
+          type: probabilistic
+          param: 0.7
+  ui:
+    options:
+      dependencies:
+        menuEnabled: true
+      tracking:
+        gaID: UA-000000-2
+      menu:
+        - label: "About Nutrition App"
+          items:
+            - label: "Documentation"
+              url: "https://docs.nutrition-app.com"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 250m
+        memory: 384Mi
+  volumeMounts:
+    - name: config-volume
+      mountPath: /etc/jaeger
+      readOnly: true
+  volumes:
+    - name: config-volume
+      configMap:
+        name: jaeger-config

@@ -1,0 +1,95 @@
+{
+    "widgets": [
+        {
+            "height": 6,
+            "width": 12,
+            "y": 0,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "view": "timeSeries",
+                "stacked": false,
+                "metrics": [
+                    [ "AWS/ECS", "CPUUtilization", "ServiceName", "nutrition-service", "ClusterName", "nutrition-cluster" ],
+                    [ ".", "MemoryUtilization", ".", ".", ".", "." ]
+                ],
+                "region": "${AWS_REGION}",
+                "title": "ECS Service Performance"
+            }
+        },
+        {
+            "height": 6,
+            "width": 12,
+            "y": 0,
+            "x": 12,
+            "type": "metric",
+            "properties": {
+                "view": "timeSeries",
+                "stacked": false,
+                "metrics": [
+                    [ "AWS/ApplicationELB", "RequestCount", "LoadBalancer", "${ALB_NAME}" ],
+                    [ ".", "HTTPCode_Target_5XX_Count", ".", "." ],
+                    [ ".", "HTTPCode_Target_4XX_Count", ".", "." ]
+                ],
+                "region": "${AWS_REGION}",
+                "title": "API Request Metrics"
+            }
+        },
+        {
+            "height": 6,
+            "width": 12,
+            "y": 6,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "view": "timeSeries",
+                "stacked": false,
+                "metrics": [
+                    [ "AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", "${DB_INSTANCE_ID}" ],
+                    [ ".", "FreeableMemory", ".", "." ],
+                    [ ".", "ReadIOPS", ".", "." ],
+                    [ ".", "WriteIOPS", ".", "." ]
+                ],
+                "region": "${AWS_REGION}",
+                "title": "Database Performance"
+            }
+        },
+        {
+            "height": 6,
+            "width": 12,
+            "y": 6,
+            "x": 12,
+            "type": "metric",
+            "properties": {
+                "view": "timeSeries",
+                "stacked": false,
+                "metrics": [
+                    [ "AWS/ElastiCache", "CPUUtilization", "CacheClusterId", "${CACHE_CLUSTER_ID}" ],
+                    [ ".", "FreeableMemory", ".", "." ],
+                    [ ".", "CacheHits", ".", "." ],
+                    [ ".", "CacheMisses", ".", "." ]
+                ],
+                "region": "${AWS_REGION}",
+                "title": "Cache Performance"
+            }
+        },
+        {
+            "height": 6,
+            "width": 24,
+            "y": 12,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "view": "timeSeries",
+                "stacked": false,
+                "metrics": [
+                    [ "NutritionApp", "ApiLatency", "Endpoint", "meals" ],
+                    [ ".", ".", ".", "analysis" ],
+                    [ ".", ".", ".", "profile" ]
+                ],
+                "region": "${AWS_REGION}",
+                "title": "API Endpoint Latency"
+            }
+        }
+    ]
+}

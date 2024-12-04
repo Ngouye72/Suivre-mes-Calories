@@ -1,0 +1,27 @@
+{
+  "cluster": "nutrition-cluster",
+  "serviceName": "nutrition-service",
+  "taskDefinition": "nutrition-app",
+  "desiredCount": 2,
+  "launchType": "FARGATE",
+  "platformVersion": "LATEST",
+  "networkConfiguration": {
+    "awsvpcConfiguration": {
+      "subnets": ["${SUBNET_1}", "${SUBNET_2}"],
+      "securityGroups": ["${SECURITY_GROUP}"],
+      "assignPublicIp": "ENABLED"
+    }
+  },
+  "loadBalancers": [
+    {
+      "targetGroupArn": "${TARGET_GROUP_ARN}",
+      "containerName": "nutrition-api",
+      "containerPort": 5000
+    }
+  ],
+  "deploymentConfiguration": {
+    "maximumPercent": 200,
+    "minimumHealthyPercent": 100
+  },
+  "healthCheckGracePeriodSeconds": 60
+}

@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  pghero:
+    image: ankane/pghero
+    container_name: nutrition-pghero
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:5432/${DB_NAME}
+      - PGHERO_USERNAME=${PGHERO_USERNAME}
+      - PGHERO_PASSWORD=${PGHERO_PASSWORD}
+      # Configuration des seuils d'alerte
+      - PGHERO_LONG_RUNNING_QUERY_SEC=60
+      - PGHERO_SLOW_QUERY_MS=100
+      - PGHERO_EXPLAIN_TIMEOUT_SEC=10
+      # Configuration de la rétention
+      - PGHERO_STATS_RETENTION_DAYS=7
+      # Configuration des notifications
+      - PGHERO_EMAIL_FROM=alerts@nutrition-app.com
+      - PGHERO_EMAIL_TO=dba@nutrition-app.com
+      - SMTP_ADDRESS=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+    volumes:
+      - ./config:/app/config
+    networks:
+      - monitoring-net
+    restart: unless-stopped
+
+networks:
+  monitoring-net:
+    external: true

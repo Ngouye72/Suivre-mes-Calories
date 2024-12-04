@@ -1,0 +1,118 @@
+groups:
+  - name: nutrition-app-alerts
+    rules:
+      # Alertes système
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          description: "CPU usage is above 85% for 5 minutes"
+          value: "{{ $value }}%"
+          runbook: "https://wiki.nutrition-app.com/runbooks/high-cpu"
+
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          description: "Memory usage is above 90%"
+          value: "{{ $value }}%"
+          runbook: "https://wiki.nutrition-app.com/runbooks/high-memory"
+
+      # Alertes conteneurs
+      - alert: ContainerHighMemory
+        expr: container_memory_usage_bytes / container_spec_memory_limit_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          description: "Container {{ $labels.name }} memory usage is above 85%"
+          value: "{{ $value }}%"
+
+      - alert: ContainerHighCPU
+        expr: rate(container_cpu_usage_seconds_total[5m]) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          description: "Container {{ $labels.name }} CPU usage is above 85%"
+          value: "{{ $value }}%"
+
+      # Alertes application
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          description: "95th percentile of response time is above 2 seconds"
+          value: "{{ $value }}s"
+
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) * 100 > 5
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          description: "Error rate is above 5%"
+          value: "{{ $value }}%"
+
+      # Alertes base de données
+      - alert: HighDBConnections
+        expr: pg_stat_activity_count > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          description: "Database has more than 100 active connections"
+          value: "{{ $value }} connections"
+
+      - alert: SlowQueries
+        expr: rate(pg_slow_queries_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          description: "More than 10 slow queries per second"
+          value: "{{ $value }} queries/s"
+
+      # Alertes nutrition spécifiques
+      - alert: HighMealCreationLatency
+        expr: histogram_quantile(0.95, rate(meal_creation_duration_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          description: "Meal creation latency is above 1 second (95th percentile)"
+          value: "{{ $value }}s"
+
+      - alert: NutritionCalculationErrors
+        expr: rate(nutrition_calculation_errors_total[5m]) > 5
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          description: "High rate of nutrition calculation errors"
+          value: "{{ $value }} errors/s"
+
+      # Alertes ML
+      - alert: MLPredictionLatency
+        expr: histogram_quantile(0.95, rate(ml_prediction_duration_seconds_bucket[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          description: "ML prediction latency is above 0.5 seconds (95th percentile)"
+          value: "{{ $value }}s"
+
+      - alert: MLPredictionAccuracyDrop
+        expr: ml_prediction_accuracy_rolling_24h < 0.8
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          description: "ML prediction accuracy has dropped below 80%"
+          value: "{{ $value }}%"

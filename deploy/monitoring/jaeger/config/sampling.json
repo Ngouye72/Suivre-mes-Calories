@@ -1,0 +1,62 @@
+{
+  "service_strategies": [
+    {
+      "service": "nutrition-app",
+      "type": "probabilistic",
+      "param": 0.5,
+      "operation_strategies": [
+        {
+          "operation": "/api/meals",
+          "type": "probabilistic",
+          "param": 1.0
+        },
+        {
+          "operation": "/api/weight-logs",
+          "type": "probabilistic",
+          "param": 1.0
+        },
+        {
+          "operation": "/api/nutrition/calculate",
+          "type": "probabilistic",
+          "param": 1.0
+        },
+        {
+          "operation": "/api/users/goals",
+          "type": "probabilistic",
+          "param": 0.7
+        },
+        {
+          "operation": "/api/stats",
+          "type": "probabilistic",
+          "param": 0.3
+        }
+      ]
+    },
+    {
+      "service": "nutrition-db",
+      "type": "probabilistic",
+      "param": 0.3,
+      "operation_strategies": [
+        {
+          "operation": "meal_creation",
+          "type": "probabilistic",
+          "param": 1.0
+        },
+        {
+          "operation": "weight_log",
+          "type": "probabilistic",
+          "param": 1.0
+        }
+      ]
+    },
+    {
+      "service": "nutrition-cache",
+      "type": "probabilistic",
+      "param": 0.2
+    }
+  ],
+  "default_strategy": {
+    "type": "probabilistic",
+    "param": 0.1
+  }
+}

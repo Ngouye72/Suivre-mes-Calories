@@ -1,0 +1,125 @@
+---
+env:
+  contexts:
+    - name: Nutrition App
+      urls: ["https://nutrition-app.com"]
+      includePaths:
+        - "https://nutrition-app.com.*"
+      excludePaths:
+        - "https://nutrition-app.com/docs.*"
+        - "https://nutrition-app.com/static.*"
+      authentication:
+        method: "form"
+        loginUrl: "https://nutrition-app.com/auth/login"
+        loginRequestData: "username={%username%}&password={%password%}"
+        loggedInRegex: "\\QMon Profil\\E"
+        loggedOutRegex: "\\QConnexion\\E"
+
+  parameters:
+    failOnError: true
+    failOnWarning: false
+    progressToStdout: true
+
+alerts:
+  - name: "Cross Site Scripting (XSS)"
+    riskcode: 3
+    confidence: 2
+    action: "block"
+    
+  - name: "SQL Injection"
+    riskcode: 3
+    confidence: 2
+    action: "block"
+    
+  - name: "Path Traversal"
+    riskcode: 3
+    confidence: 2
+    action: "block"
+    
+  - name: "Remote File Inclusion"
+    riskcode: 3
+    confidence: 2
+    action: "block"
+    
+  - name: "Server Side Request Forgery"
+    riskcode: 3
+    confidence: 2
+    action: "block"
+
+rules:
+  - id: 10016
+    name: "Web Browser XSS Protection Not Enabled"
+    threshold: "medium"
+    
+  - id: 10020
+    name: "X-Frame-Options Header Not Set"
+    threshold: "medium"
+    
+  - id: 10021
+    name: "X-Content-Type-Options Header Missing"
+    threshold: "medium"
+    
+  - id: 10036
+    name: "Server Leaks Version Information"
+    threshold: "medium"
+
+scans:
+  - name: "Full Scan"
+    policy: "Default Policy"
+    scanners:
+      - name: "Active Scan"
+        enabled: true
+        
+      - name: "Passive Scan"
+        enabled: true
+        
+      - name: "Spider"
+        enabled: true
+        maxDuration: 60
+        
+    rules:
+      - id: 40012
+        name: "Cross Site Scripting (Reflected)"
+        threshold: "medium"
+        
+      - id: 40014
+        name: "Cross Site Scripting (Persistent)"
+        threshold: "medium"
+        
+      - id: 40018
+        name: "SQL Injection"
+        threshold: "medium"
+        
+      - id: 40020
+        name: "Path Traversal"
+        threshold: "medium"
+
+reporting:
+  formats:
+    - html
+    - xml
+    - json
+  destination: "/zap/reports/"
+  template: "traditional-html"
+  title: "Rapport de Sécurité Nutrition App"
+  description: "Analyse de sécurité automatisée de l'application de suivi nutritionnel"
+  risk: "high"
+
+apis:
+  - name: "Nutrition API"
+    url: "https://nutrition-app.com/api"
+    format: "openapi"
+    file: "/zap/api/openapi.yaml"
+    auth:
+      type: "bearer"
+      token: "{%api_token%}"
+
+hooks:
+  - type: "preactive"
+    script: "/zap/scripts/preactive.js"
+    
+  - type: "postactive"
+    script: "/zap/scripts/postactive.js"
+    
+  - type: "alert"
+    script: "/zap/scripts/alert.js"

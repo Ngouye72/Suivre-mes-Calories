@@ -1,0 +1,107 @@
+groups:
+  - name: NutritionAppAlerts
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(http_requests_total{status=~"5.."}[5m])) by (service)
+          /
+          sum(rate(http_requests_total[5m])) by (service)
+          * 100 > 5
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "High Error Rate on {{ $labels.service }}"
+          description: "Error rate is {{ $value }}% for service {{ $labels.service }}"
+
+      - alert: SlowResponses
+        expr: |
+          histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service))
+          > 2
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Slow Responses on {{ $labels.service }}"
+          description: "95th percentile of response time is {{ $value }}s for service {{ $labels.service }}"
+
+      - alert: HighCPUUsage
+        expr: |
+          100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          team: ops
+        annotations:
+          summary: "High CPU Usage on {{ $labels.instance }}"
+          description: "CPU usage is {{ $value }}% on {{ $labels.instance }}"
+
+      - alert: HighMemoryUsage
+        expr: |
+          (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes)
+          /
+          node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          team: ops
+        annotations:
+          summary: "High Memory Usage on {{ $labels.instance }}"
+          description: "Memory usage is {{ $value }}% on {{ $labels.instance }}"
+
+      - alert: DatabaseConnections
+        expr: |
+          pg_stat_activity_count > 150
+        for: 5m
+        labels:
+          severity: warning
+          team: dba
+        annotations:
+          summary: "High Database Connections"
+          description: "Database has {{ $value }} active connections"
+
+      - alert: RedisMemoryUsage
+        expr: |
+          redis_memory_used_bytes / redis_memory_max_bytes * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          team: ops
+        annotations:
+          summary: "High Redis Memory Usage"
+          description: "Redis memory usage is {{ $value }}%"
+
+      - alert: UserServiceErrors
+        expr: |
+          sum(increase(user_service_errors_total[5m])) > 10
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High User Service Errors"
+          description: "User service has {{ $value }} errors in the last 5 minutes"
+
+      - alert: MealServiceErrors
+        expr: |
+          sum(increase(meal_service_errors_total[5m])) > 10
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High Meal Service Errors"
+          description: "Meal service has {{ $value }} errors in the last 5 minutes"
+
+      - alert: APIEndpointDown
+        expr: |
+          probe_success{job="blackbox"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          team: ops
+        annotations:
+          summary: "API Endpoint Down"
+          description: "API endpoint {{ $labels.instance }} is down"

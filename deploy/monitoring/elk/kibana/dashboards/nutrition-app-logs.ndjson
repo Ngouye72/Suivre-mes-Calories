@@ -1,0 +1,82 @@
+{
+  "version": "7.10.0",
+  "objects": [
+    {
+      "id": "nutrition-app-overview",
+      "type": "dashboard",
+      "attributes": {
+        "title": "Nutrition App - Vue d'ensemble des Logs",
+        "hits": 0,
+        "description": "Dashboard principal pour le monitoring des logs de l'application",
+        "panelsJSON": [
+          {
+            "type": "visualization",
+            "gridData": {
+              "x": 0,
+              "y": 0,
+              "w": 24,
+              "h": 8,
+              "i": "1"
+            },
+            "panelIndex": "1",
+            "version": "7.10.0",
+            "panelRefName": "panel_error_distribution"
+          },
+          {
+            "type": "visualization",
+            "gridData": {
+              "x": 24,
+              "y": 0,
+              "w": 24,
+              "h": 8,
+              "i": "2"
+            },
+            "panelIndex": "2",
+            "version": "7.10.0",
+            "panelRefName": "panel_response_times"
+          }
+        ],
+        "timeRestore": false,
+        "kibanaSavedObjectMeta": {
+          "searchSourceJSON": "{\"query\":{\"query\":\"\",\"language\":\"kuery\"},\"filter\":[]}"
+        }
+      },
+      "references": [
+        {
+          "name": "panel_error_distribution",
+          "type": "visualization",
+          "id": "error-distribution"
+        },
+        {
+          "name": "panel_response_times",
+          "type": "visualization",
+          "id": "response-times"
+        }
+      ]
+    },
+    {
+      "id": "error-distribution",
+      "type": "visualization",
+      "attributes": {
+        "title": "Distribution des Erreurs",
+        "visState": "{\"type\":\"pie\",\"params\":{\"type\":\"pie\",\"addTooltip\":true,\"addLegend\":true,\"legendPosition\":\"right\",\"isDonut\":true},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"2\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"segment\",\"params\":{\"field\":\"service.keyword\",\"size\":10,\"order\":\"desc\",\"orderBy\":\"1\"}}]}"
+      }
+    },
+    {
+      "id": "response-times",
+      "type": "visualization",
+      "attributes": {
+        "title": "Temps de Réponse API",
+        "visState": "{\"type\":\"line\",\"params\":{\"type\":\"line\",\"grid\":{\"categoryLines\":false},\"categoryAxes\":[{\"id\":\"CategoryAxis-1\",\"type\":\"category\",\"position\":\"bottom\",\"show\":true,\"scale\":{\"type\":\"linear\"},\"labels\":{\"show\":true,\"truncate\":100},\"title\":{}}],\"valueAxes\":[{\"id\":\"ValueAxis-1\",\"name\":\"LeftAxis-1\",\"type\":\"value\",\"position\":\"left\",\"show\":true,\"scale\":{\"type\":\"linear\",\"mode\":\"normal\"},\"labels\":{\"show\":true},\"title\":{\"text\":\"Response Time (ms)\"}}],\"seriesParams\":[{\"show\":true,\"type\":\"line\",\"mode\":\"normal\",\"data\":{\"label\":\"Response Time\",\"id\":\"1\"},\"valueAxis\":\"ValueAxis-1\",\"drawLinesBetweenPoints\":true,\"lineWidth\":2}],\"addTooltip\":true,\"addLegend\":true,\"legendPosition\":\"right\",\"times\":[],\"addTimeMarker\":false,\"labels\":{},\"thresholdLine\":{\"show\":false,\"value\":10,\"width\":1,\"style\":\"full\",\"color\":\"#E7664C\"}},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"avg\",\"schema\":\"metric\",\"params\":{\"field\":\"response_time\"}},{\"id\":\"2\",\"enabled\":true,\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"@timestamp\",\"timeRange\":{\"from\":\"now-24h\",\"to\":\"now\"},\"useNormalizedEsInterval\":true,\"scaleMetricValues\":false,\"interval\":\"auto\",\"drop_partials\":false,\"min_doc_count\":1,\"extended_bounds\":{}}}]}"
+      }
+    },
+    {
+      "id": "meal-tracking",
+      "type": "visualization",
+      "attributes": {
+        "title": "Suivi des Repas",
+        "visState": "{\"type\":\"metric\",\"params\":{\"addTooltip\":true,\"addLegend\":false,\"type\":\"metric\",\"metric\":{\"percentageMode\":false,\"useRanges\":false,\"colorSchema\":\"Green to Red\",\"metricColorMode\":\"None\",\"colorsRange\":[{\"from\":0,\"to\":10000}],\"labels\":{\"show\":true},\"invertColors\":false,\"style\":{\"bgFill\":\"#000\",\"bgColor\":false,\"labelColor\":false,\"subText\":\"\",\"fontSize\":60}}},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{\"customLabel\":\"Repas Enregistrés\"}}]}"
+      }
+    }
+  ]
+}

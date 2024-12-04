@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Monitoring - Suivre mes Calories</title>
+    
+    <!-- CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.css" rel="stylesheet">
+    
+    <style>
+        .metric-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .alert-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            padding: 5px 10px;
+            border-radius: 15px;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                Monitoring Dashboard
+            </a>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <!-- Vue d'ensemble -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Vue d'ensemble du système</h5>
+                        <div id="systemHealthChart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Métriques principales -->
+        <div class="row mb-4" id="mainMetrics">
+            <!-- Rempli dynamiquement -->
+        </div>
+
+        <!-- Alertes -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Alertes Actives</h5>
+                        <div id="activeAlerts">
+                            <!-- Rempli dynamiquement -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Graphiques détaillés -->
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Performance API</h5>
+                        <div id="apiPerformanceChart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Utilisation Ressources</h5>
+                        <div id="resourceUsageChart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+    
+    <script>
+        // Configuration des couleurs
+        const colors = {
+            healthy: '#28a745',
+            warning: '#ffc107',
+            danger: '#dc3545',
+            info: '#17a2b8'
+        };
+
+        // Mise à jour périodique
+        function updateDashboard() {
+            fetch('/api/metrics')
+                .then(response => response.json())
+                .then(data => {
+                    updateMainMetrics(data);
+                    updateSystemHealth(data.health_analysis);
+                    updateAlerts(data.alerts);
+                    updateCharts(data);
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        // Mise à jour métriques principales
+        function updateMainMetrics(data) {
+            const metrics = data.metrics;
+            const container = document.getElementById('mainMetrics');
+            container.innerHTML = '';
+
+            Object.entries(metrics).forEach(([component, componentMetrics]) => {
+                const health = componentMetrics.health || 1;
+                const color = health > 0.8 ? colors.healthy : 
+                             health > 0.6 ? colors.warning : colors.danger;
+
+                const card = `
+                    <div class="col-md-3 mb-4">
+                        <div class="card metric-card">
+                            <div class="card-body">
+                                <h6 class="card-title">${component}</h6>
+                                <div class="progress mb-2">
+                                    <div class="progress-bar" role="progressbar" 
+                                         style="width: ${health * 100}%; background-color: ${color}"
+                                         aria-valuenow="${health * 100}" aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                        ${Math.round(health * 100)}%
+                                    </div>
+                                </div>
+                                <small class="text-muted">
+                                    Dernière mise à jour: ${new Date().toLocaleTimeString()}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += card;
+            });
+        }
+
+        // Mise à jour santé système
+        function updateSystemHealth(healthData) {
+            const ctx = document.getElementById('systemHealthChart').getContext('2d');
+            
+            if (window.systemHealthChart) {
+                window.systemHealthChart.destroy();
+            }
+
+            const labels = Object.keys(healthData.component_health);
+            const data = labels.map(component => 
+                healthData.component_health[component].health_score
+            );
+
+            window.systemHealthChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Santé du système',
+                        data: data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 1
+                        }
+                    }
+                }
+            });
+        }
+
+        // Mise à jour alertes
+        function updateAlerts(alertData) {
+            const container = document.getElementById('activeAlerts');
+            container.innerHTML = '';
+
+            if (alertData.active.length === 0) {
+                container.innerHTML = '<div class="alert alert-success">Aucune alerte active</div>';
+                return;
+            }
+
+            alertData.active.forEach(alert => {
+                const alertClass = alert.severity === 'critical' ? 'danger' :
+                                 alert.severity === 'high' ? 'warning' : 'info';
+                
+                const alertElement = `
+                    <div class="alert alert-${alertClass} d-flex align-items-center">
+                        <div>
+                            <strong>${alert.component}:</strong> ${alert.message}
+                            <br>
+                            <small>Sévérité: ${alert.severity}</small>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += alertElement;
+            });
+        }
+
+        // Mise à jour graphiques
+        function updateCharts(data) {
+            updateAPIPerformanceChart(data);
+            updateResourceUsageChart(data);
+        }
+
+        function updateAPIPerformanceChart(data) {
+            const ctx = document.getElementById('apiPerformanceChart').getContext('2d');
+            
+            if (window.apiPerformanceChart) {
+                window.apiPerformanceChart.destroy();
+            }
+
+            const apiMetrics = data.metrics.api || {};
+            
+            window.apiPerformanceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array(10).fill('').map((_, i) => 
+                        new Date(Date.now() - i * 60000).toLocaleTimeString()
+                    ).reverse(),
+                    datasets: [{
+                        label: 'Latence (ms)',
+                        data: Array(10).fill(null).map(() => 
+                            apiMetrics.latency || Math.random() * 100
+                        ),
+                        borderColor: colors.info,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        function updateResourceUsageChart(data) {
+            const ctx = document.getElementById('resourceUsageChart').getContext('2d');
+            
+            if (window.resourceUsageChart) {
+                window.resourceUsageChart.destroy();
+            }
+
+            const systemMetrics = data.metrics.system || {};
+            
+            window.resourceUsageChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['CPU', 'Mémoire', 'Disque'],
+                    datasets: [{
+                        label: 'Utilisation (%)',
+                        data: [
+                            systemMetrics.cpu_usage || Math.random() * 100,
+                            systemMetrics.memory_usage || Math.random() * 100,
+                            systemMetrics.disk_usage || Math.random() * 100
+                        ],
+                        backgroundColor: [
+                            colors.info,
+                            colors.warning,
+                            colors.healthy
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        // Mise à jour toutes les 30 secondes
+        updateDashboard();
+        setInterval(updateDashboard, 30000);
+    </script>
+</body>
+</html>

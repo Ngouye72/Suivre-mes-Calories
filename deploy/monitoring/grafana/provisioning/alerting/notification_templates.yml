@@ -1,0 +1,128 @@
+apiVersion: 1
+
+templates:
+  - name: slack.default.title
+    template: |
+      [{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }}
+
+  - name: slack.default.text
+    template: |
+      {{ if gt (len .Alerts.Firing) 0 }}
+      *Alertes actives:*
+      {{ range .Alerts.Firing }}
+      • *{{ .Labels.severity | toUpper }}*: {{ .Annotations.summary }}
+        {{ .Annotations.description }}
+        _Durée_: {{ duration .StartsAt .EndsAt }}
+        _Team_: {{ .Labels.team }}
+      {{ end }}
+      {{ end }}
+      {{ if gt (len .Alerts.Resolved) 0 }}
+      *Alertes résolues:*
+      {{ range .Alerts.Resolved }}
+      • *{{ .Labels.severity | toUpper }}*: {{ .Annotations.summary }}
+        _Résolue après_: {{ duration .StartsAt .EndsAt }}
+      {{ end }}
+      {{ end }}
+
+  - name: pagerduty.default.description
+    template: |
+      {{ .CommonLabels.alertname }}
+      Sévérité: {{ .CommonLabels.severity | toUpper }}
+      {{ range .Alerts }}
+      - {{ .Annotations.summary }}: {{ .Annotations.description }}
+      {{ end }}
+
+  - name: email.default.subject
+    template: |
+      [{{ .Status | toUpper }}] {{ .CommonLabels.alertname }} - {{ .CommonLabels.severity | toUpper }}
+
+  - name: email.default.html
+    template: |
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; }
+          .alert { margin: 10px 0; padding: 10px; border-radius: 4px; }
+          .critical { background-color: #ffebee; border: 1px solid #ef5350; }
+          .warning { background-color: #fff3e0; border: 1px solid #ff9800; }
+          .info { background-color: #e3f2fd; border: 1px solid #2196f3; }
+        </style>
+      </head>
+      <body>
+        <h2>État des Alertes</h2>
+        {{ if gt (len .Alerts.Firing) 0 }}
+        <h3>🔥 Alertes Actives ({{ .Alerts.Firing | len }})</h3>
+        {{ range .Alerts.Firing }}
+        <div class="alert {{ .Labels.severity }}">
+          <h4>{{ .Labels.severity | toUpper }}: {{ .Annotations.summary }}</h4>
+          <p>{{ .Annotations.description }}</p>
+          <p><strong>Équipe:</strong> {{ .Labels.team }}</p>
+          <p><strong>Durée:</strong> {{ duration .StartsAt .EndsAt }}</p>
+        </div>
+        {{ end }}
+        {{ end }}
+        
+        {{ if gt (len .Alerts.Resolved) 0 }}
+        <h3>✅ Alertes Résolues ({{ .Alerts.Resolved | len }})</h3>
+        {{ range .Alerts.Resolved }}
+        <div class="alert info">
+          <h4>{{ .Labels.severity | toUpper }}: {{ .Annotations.summary }}</h4>
+          <p>Résolue après: {{ duration .StartsAt .EndsAt }}</p>
+        </div>
+        {{ end }}
+        {{ end }}
+        
+        <hr>
+        <footer>
+          <p>Généré automatiquement par le système de monitoring</p>
+        </footer>
+      </body>
+      </html>
+
+alert_groups:
+  - name: infrastructure
+    rules:
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: devops
+        annotations:
+          summary: "Service {{ $labels.instance }} est arrêté"
+          description: "Le service {{ $labels.instance }} est inaccessible depuis 1 minute"
+          
+      - alert: HighCPUUsage
+        expr: avg(rate(container_cpu_usage_seconds_total{container!=""}[5m])) by (container) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          team: devops
+        annotations:
+          summary: "Utilisation CPU élevée"
+          description: "Le container {{ $labels.container }} utilise plus de 85% du CPU"
+
+  - name: application
+    rules:
+      - alert: APIHighErrorRate
+        expr: sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) * 100 > 5
+        for: 5m
+        labels:
+          severity: critical
+          team: devops
+        annotations:
+          summary: "Taux d'erreur API élevé"
+          description: "Le taux d'erreur est supérieur à 5% depuis 5 minutes"
+
+  - name: business
+    rules:
+      - alert: UserRetentionDrop
+        expr: (sum(rate(user_deletions_total[7d])) / sum(rate(user_registrations_total[7d]))) * 100 > 10
+        for: 24h
+        labels:
+          severity: warning
+          team: business
+        annotations:
+          summary: "Baisse de la rétention utilisateurs"
+          description: "Le taux de désabonnement est supérieur à 10% sur les 7 derniers jours"

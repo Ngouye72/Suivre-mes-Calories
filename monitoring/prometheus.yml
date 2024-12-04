@@ -1,0 +1,30 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'nutrition-api'
+    static_configs:
+      - targets: ['localhost:5000']
+    metrics_path: '/metrics'
+    scheme: 'http'
+
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['localhost:9100']
+
+  - job_name: 'postgres-exporter'
+    static_configs:
+      - targets: ['localhost:9187']
+
+  - job_name: 'redis-exporter'
+    static_configs:
+      - targets: ['localhost:9121']
+
+alerting:
+  alertmanagers:
+    - static_configs:
+      - targets: ['localhost:9093']
+
+rule_files:
+  - 'alert_rules.yml'

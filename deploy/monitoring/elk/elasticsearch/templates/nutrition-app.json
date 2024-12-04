@@ -1,0 +1,71 @@
+{
+  "index_patterns": ["nutrition-app-*"],
+  "template": {
+    "settings": {
+      "number_of_shards": 3,
+      "number_of_replicas": 1,
+      "index.lifecycle.name": "nutrition-app-policy",
+      "index.lifecycle.rollover_alias": "nutrition-app"
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "service": {
+          "type": "keyword"
+        },
+        "log_level": {
+          "type": "keyword"
+        },
+        "trace_id": {
+          "type": "keyword"
+        },
+        "message": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "http_method": {
+          "type": "keyword"
+        },
+        "request_path": {
+          "type": "keyword"
+        },
+        "response_time": {
+          "type": "float"
+        },
+        "response_code": {
+          "type": "integer"
+        },
+        "user_id": {
+          "type": "keyword"
+        },
+        "meal_id": {
+          "type": "keyword"
+        },
+        "calories": {
+          "type": "integer"
+        },
+        "action": {
+          "type": "keyword"
+        },
+        "env": {
+          "type": "keyword"
+        },
+        "app_name": {
+          "type": "keyword"
+        }
+      }
+    }
+  },
+  "priority": 100,
+  "_meta": {
+    "description": "Template pour les logs de l'application Nutrition",
+    "version": "1.0"
+  }
+}

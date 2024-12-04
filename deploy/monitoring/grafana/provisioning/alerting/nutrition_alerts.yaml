@@ -1,0 +1,183 @@
+apiVersion: 1
+
+groups:
+  - name: Système
+    folder: Nutrition
+    interval: 1m
+    rules:
+      - name: Haute Utilisation CPU
+        condition: avg(system_cpu_usage) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Utilisation CPU élevée
+          description: L'utilisation CPU est > 80% depuis 5 minutes
+
+      - name: Mémoire Faible
+        condition: avg(system_memory_usage) > 90
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: Mémoire système faible
+          description: L'utilisation mémoire est > 90% depuis 5 minutes
+
+  - name: Application
+    folder: Nutrition
+    interval: 30s
+    rules:
+      - name: Latence API Élevée
+        condition: avg(nutrition_api_latency_seconds) > 1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: Latence API élevée
+          description: La latence moyenne des API est > 1s depuis 2 minutes
+
+      - name: Taux d'Erreurs
+        condition: sum(rate(nutrition_errors_total[5m])) > 10
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: Taux d'erreurs élevé
+          description: Plus de 10 erreurs/minute détectées
+
+  - name: Base de Données
+    folder: Nutrition
+    interval: 1m
+    rules:
+      - name: Connexions DB Élevées
+        condition: avg(nutrition_db_connections) > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Nombre élevé de connexions DB
+          description: Plus de 100 connexions DB actives depuis 5 minutes
+
+      - name: Latence Requêtes DB
+        condition: avg(nutrition_db_query_duration_seconds) > 0.5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: Requêtes DB lentes
+          description: La durée moyenne des requêtes est > 0.5s depuis 2 minutes
+
+  - name: Machine Learning
+    folder: Nutrition
+    interval: 5m
+    rules:
+      - name: Précision ML Faible
+        condition: avg(nutrition_ml_prediction_accuracy) < 0.8
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: Faible précision ML
+          description: La précision des prédictions est < 80% depuis 30 minutes
+
+      - name: Latence ML Élevée
+        condition: avg(nutrition_ml_prediction_latency_seconds) > 0.2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Prédictions ML lentes
+          description: La latence des prédictions est > 200ms depuis 5 minutes
+
+  - name: Sécurité
+    folder: Nutrition
+    interval: 1m
+    rules:
+      - name: Tentatives Login Échouées
+        condition: sum(rate(nutrition_failed_logins_total[5m])) > 20
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: Tentatives de connexion suspectes
+          description: Plus de 20 échecs de connexion/minute détectés
+
+      - name: Détections PII
+        condition: sum(rate(nutrition_pii_detection_total[5m])) > 5
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: Détections PII élevées
+          description: Plus de 5 détections PII/minute
+
+  - name: Frontend
+    folder: Nutrition
+    interval: 1m
+    rules:
+      - name: LCP Élevé
+        condition: avg(nutrition_web_vitals_lcp) > 4000
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: Performance frontend dégradée
+          description: LCP > 4s depuis 15 minutes
+
+      - name: Erreurs JS
+        condition: sum(rate(nutrition_frontend_errors_total[5m])) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Erreurs frontend élevées
+          description: Plus de 10 erreurs JS/minute
+
+  - name: Business
+    folder: Nutrition
+    interval: 5m
+    rules:
+      - name: Baisse Engagement
+        condition: avg(nutrition_user_engagement) < 0.4
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: Faible engagement utilisateur
+          description: Taux d'engagement < 40% depuis 1 heure
+
+      - name: Churn Élevé
+        condition: rate(nutrition_user_churn[24h]) > 0.1
+        for: 12h
+        labels:
+          severity: critical
+        annotations:
+          summary: Taux de churn élevé
+          description: Taux de churn > 10% sur 24h
+
+contact_points:
+  - name: Email
+    email_configs:
+      - to: admin@nutrition-app.com
+        
+  - name: Slack
+    slack_configs:
+      - api_url: https://hooks.slack.com/services/xxx/yyy/zzz
+        channel: '#alerts'
+
+notification_policies:
+  - name: Default
+    group_by: ['alertname']
+    group_wait: 30s
+    group_interval: 5m
+    repeat_interval: 4h
+    receiver: Email
+    
+  - name: Critical
+    match:
+      severity: critical
+    group_by: ['alertname']
+    group_wait: 0s
+    group_interval: 1m
+    repeat_interval: 30m
+    receiver: Slack

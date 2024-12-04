@@ -1,0 +1,319 @@
+openapi: 3.0.3
+info:
+  title: Nutrition Tracking API
+  description: API pour le suivi nutritionnel et l'analyse comportementale
+  version: 1.0.0
+  contact:
+    name: Support Team
+    email: support@calories.example.com
+
+servers:
+  - url: https://api.calories.example.com/v1
+    description: Production server
+  - url: https://staging-api.calories.example.com/v1
+    description: Staging server
+  - url: http://localhost:5000/v1
+    description: Development server
+
+tags:
+  - name: auth
+    description: Authentification et gestion des utilisateurs
+  - name: meals
+    description: Gestion des repas et de l'alimentation
+  - name: analysis
+    description: Analyses nutritionnelles et comportementales
+  - name: profile
+    description: Gestion du profil utilisateur
+  - name: notifications
+    description: Gestion des notifications
+  - name: sync
+    description: Synchronisation des données
+
+paths:
+  /auth/register:
+    post:
+      tags:
+        - auth
+      summary: Inscription d'un nouvel utilisateur
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - username
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                username:
+                  type: string
+                  minLength: 3
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+      responses:
+        '201':
+          description: Utilisateur créé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /auth/login:
+    post:
+      tags:
+        - auth
+      summary: Connexion utilisateur
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: Connexion réussie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /meals:
+    get:
+      tags:
+        - meals
+      summary: Liste des repas
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Liste des repas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Meal'
+    post:
+      tags:
+        - meals
+      summary: Ajouter un repas
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MealInput'
+      responses:
+        '201':
+          description: Repas créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Meal'
+
+  /analysis/nutrients:
+    get:
+      tags:
+        - analysis
+      summary: Analyse nutritionnelle
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: start_date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Analyse nutritionnelle
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NutrientAnalysis'
+
+  /analysis/behavior:
+    get:
+      tags:
+        - analysis
+      summary: Analyse comportementale
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Analyse comportementale
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BehaviorAnalysis'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        username:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    Meal:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        calories:
+          type: number
+        protein:
+          type: number
+        carbs:
+          type: number
+        fat:
+          type: number
+        meal_time:
+          type: string
+          format: date-time
+
+    MealInput:
+      type: object
+      required:
+        - name
+        - calories
+        - meal_time
+      properties:
+        name:
+          type: string
+        calories:
+          type: number
+        protein:
+          type: number
+        carbs:
+          type: number
+        fat:
+          type: number
+        meal_time:
+          type: string
+          format: date-time
+
+    NutrientAnalysis:
+      type: object
+      properties:
+        total_calories:
+          type: number
+        average_daily_calories:
+          type: number
+        macros:
+          type: object
+          properties:
+            protein:
+              type: number
+            carbs:
+              type: number
+            fat:
+              type: number
+
+    BehaviorAnalysis:
+      type: object
+      properties:
+        meal_patterns:
+          type: object
+        eating_habits:
+          type: object
+        recommendations:
+          type: array
+          items:
+            type: string
+
+  responses:
+    BadRequest:
+      description: Requête invalide
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              details:
+                type: object
+
+    Unauthorized:
+      description: Non autorisé
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+
+    NotFound:
+      description: Ressource non trouvée
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string

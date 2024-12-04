@@ -1,0 +1,315 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": 1,
+  "links": [],
+  "panels": [
+    {
+      "title": "Vue d'ensemble",
+      "type": "row",
+      "panels": [
+        {
+          "title": "Utilisateurs Actifs",
+          "type": "stat",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "sum(nutrition_active_users)",
+              "legendFormat": "Utilisateurs Actifs"
+            }
+          ]
+        },
+        {
+          "title": "Santé Système",
+          "type": "gauge",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "avg(nutrition_system_health)",
+              "legendFormat": "Santé Système"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Métriques Business",
+      "type": "row",
+      "panels": [
+        {
+          "title": "Nouveaux Utilisateurs",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "rate(nutrition_new_users_total[24h])",
+              "legendFormat": "Nouveaux Utilisateurs"
+            }
+          ]
+        },
+        {
+          "title": "Rétention Utilisateurs",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "nutrition_user_retention",
+              "legendFormat": "Rétention"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Performance Application",
+      "type": "row",
+      "panels": [
+        {
+          "title": "Latence API",
+          "type": "heatmap",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "rate(nutrition_api_latency_bucket[5m])",
+              "legendFormat": "Latence"
+            }
+          ]
+        },
+        {
+          "title": "Erreurs",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "sum(rate(nutrition_errors_total[5m])) by (type)",
+              "legendFormat": "{{type}}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Base de Données",
+      "type": "row",
+      "panels": [
+        {
+          "title": "Connexions Actives",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "nutrition_db_connections",
+              "legendFormat": "Connexions"
+            }
+          ]
+        },
+        {
+          "title": "Latence Requêtes",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "rate(nutrition_db_query_duration_seconds_sum[5m])",
+              "legendFormat": "Latence"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Machine Learning",
+      "type": "row",
+      "panels": [
+        {
+          "title": "Précision Modèle",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "nutrition_ml_prediction_accuracy",
+              "legendFormat": "Précision"
+            }
+          ]
+        },
+        {
+          "title": "Latence Prédictions",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "rate(nutrition_ml_prediction_latency_seconds_sum[5m])",
+              "legendFormat": "Latence"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Sécurité & RGPD",
+      "type": "row",
+      "panels": [
+        {
+          "title": "Demandes RGPD",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "sum(nutrition_gdpr_requests_total) by (type)",
+              "legendFormat": "{{type}}"
+            }
+          ]
+        },
+        {
+          "title": "Détections PII",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "sum(nutrition_pii_detection_total) by (type)",
+              "legendFormat": "{{type}}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Frontend Performance",
+      "type": "row",
+      "panels": [
+        {
+          "title": "Web Vitals",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "nutrition_web_vitals_fcp",
+              "legendFormat": "FCP"
+            },
+            {
+              "expr": "nutrition_web_vitals_lcp",
+              "legendFormat": "LCP"
+            },
+            {
+              "expr": "nutrition_web_vitals_fid",
+              "legendFormat": "FID"
+            }
+          ]
+        },
+        {
+          "title": "Erreurs Frontend",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "sum(nutrition_frontend_errors_total) by (type)",
+              "legendFormat": "{{type}}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Métriques Nutrition",
+      "type": "row",
+      "panels": [
+        {
+          "title": "Objectifs Atteints",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "sum(nutrition_goals_achieved_total) by (type)",
+              "legendFormat": "{{type}}"
+            }
+          ]
+        },
+        {
+          "title": "Engagement Utilisateurs",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "nutrition_user_engagement",
+              "legendFormat": "Engagement"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 27,
+  "style": "dark",
+  "tags": ["nutrition", "monitoring"],
+  "templating": {
+    "list": [
+      {
+        "allValue": null,
+        "current": {
+          "selected": false,
+          "text": "production",
+          "value": "production"
+        },
+        "datasource": "Prometheus",
+        "definition": "label_values(environment)",
+        "description": null,
+        "error": null,
+        "hide": 0,
+        "includeAll": false,
+        "label": "Environment",
+        "multi": false,
+        "name": "environment",
+        "options": [],
+        "query": {
+          "query": "label_values(environment)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
+  },
+  "timezone": "",
+  "title": "Nutrition App Overview",
+  "uid": "nutrition-overview",
+  "version": 1
+}

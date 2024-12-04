@@ -1,0 +1,125 @@
+apiVersion: 1
+
+# Configuration LDAP
+auth.ldap:
+  enabled: true
+  config_file: /etc/grafana/ldap.toml
+  allow_sign_up: true
+
+# Configuration OAuth
+auth.generic_oauth:
+  enabled: true
+  name: OAuth
+  allow_sign_up: true
+  client_id: ${OAUTH_CLIENT_ID}
+  client_secret: ${OAUTH_CLIENT_SECRET}
+  scopes: openid profile email
+  auth_url: ${OAUTH_AUTH_URL}
+  token_url: ${OAUTH_TOKEN_URL}
+  api_url: ${OAUTH_API_URL}
+  role_attribute_path: contains(roles[*], 'admin') && 'Admin' || contains(roles[*], 'editor') && 'Editor' || 'Viewer'
+
+# Configuration des rôles
+roles:
+  - name: Admin
+    description: Super administrateur
+    permissions:
+      - actions: ["*"]
+        scope: ["*"]
+        
+  - name: Editor
+    description: Éditeur de dashboards
+    permissions:
+      - actions: ["dashboards:*", "folders:read", "teams:read"]
+        scope: ["folders:*", "dashboards:*", "teams:*"]
+        
+  - name: Viewer
+    description: Visualisation uniquement
+    permissions:
+      - actions: ["dashboards:read", "folders:read"]
+        scope: ["folders:*", "dashboards:*"]
+
+# Configuration des équipes
+teams:
+  - name: DevOps
+    org_id: 1
+    folder_permissions:
+      - folder_uid: "*"
+        permission: Edit
+    dashboard_permissions:
+      - dashboard_uid: "*"
+        permission: Edit
+        
+  - name: Nutrition
+    org_id: 1
+    folder_permissions:
+      - folder_uid: "nutrition-*"
+        permission: Edit
+    dashboard_permissions:
+      - dashboard_uid: "nutrition-*"
+        permission: Edit
+        
+  - name: Business
+    org_id: 1
+    folder_permissions:
+      - folder_uid: "business-*"
+        permission: View
+    dashboard_permissions:
+      - dashboard_uid: "business-*"
+        permission: View
+
+# Configuration des utilisateurs
+users:
+  - name: admin
+    org_role: Admin
+    teams: ["DevOps"]
+    
+  - name: nutrition_team
+    org_role: Editor
+    teams: ["Nutrition"]
+    
+  - name: business_team
+    org_role: Viewer
+    teams: ["Business"]
+
+# Configuration des dossiers
+folders:
+  - name: "Application Performance"
+    uid: "app-perf"
+    
+  - name: "Business Metrics"
+    uid: "business-metrics"
+    
+  - name: "Nutrition Analytics"
+    uid: "nutrition-analytics"
+    
+  - name: "System Monitoring"
+    uid: "system-monitoring"
+
+# Configuration des permissions des dossiers
+folder_permissions:
+  - folder_uid: "app-perf"
+    permissions:
+      - team: "DevOps"
+        permission: Edit
+      - role: "Viewer"
+        permission: View
+        
+  - folder_uid: "business-metrics"
+    permissions:
+      - team: "Business"
+        permission: View
+      - team: "DevOps"
+        permission: Edit
+        
+  - folder_uid: "nutrition-analytics"
+    permissions:
+      - team: "Nutrition"
+        permission: Edit
+      - team: "Business"
+        permission: View
+        
+  - folder_uid: "system-monitoring"
+    permissions:
+      - team: "DevOps"
+        permission: Edit

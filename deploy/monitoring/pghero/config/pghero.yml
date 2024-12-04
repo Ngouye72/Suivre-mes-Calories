@@ -1,0 +1,109 @@
+databases:
+  primary:
+    url: <%= ENV["DATABASE_URL"] %>
+    db_stats: true
+    explain: true
+    kill: true
+    kill_long_running_queries: true
+    suggested_indexes: true
+
+# Configuration des métriques à surveiller
+metrics:
+  - name: "Requêtes lentes"
+    sql: >
+      SELECT COUNT(*) 
+      FROM pg_stat_activity 
+      WHERE state = 'active' 
+      AND NOW() - query_start > interval '1 minute'
+    alert_above: 5
+    frequency: 5
+    
+  - name: "Taux de cache"
+    sql: >
+      SELECT 
+        sum(heap_blks_hit) * 100.0 / (sum(heap_blks_hit) + sum(heap_blks_read)) as hit_rate 
+      FROM pg_statio_user_tables
+    alert_below: 95
+    frequency: 60
+    
+  - name: "Connexions actives"
+    sql: >
+      SELECT COUNT(*) 
+      FROM pg_stat_activity 
+      WHERE state = 'active'
+    alert_above: 100
+    frequency: 5
+
+# Configuration des requêtes à surveiller
+queries:
+  - name: "Insertions de repas"
+    sql: >
+      SELECT COUNT(*) 
+      FROM meals 
+      WHERE created_at > NOW() - interval '5 minutes'
+    alert_above: 1000
+    frequency: 5
+    
+  - name: "Calculs de calories"
+    sql: >
+      SELECT COUNT(*) 
+      FROM calorie_calculations 
+      WHERE calculation_time > 1000
+    alert_above: 10
+    frequency: 5
+
+# Configuration des tables à surveiller
+tables:
+  - name: meals
+    size_threshold: 10GB
+    growth_rate: 1GB/day
+    
+  - name: users
+    size_threshold: 1GB
+    growth_rate: 100MB/day
+    
+  - name: nutrition_logs
+    size_threshold: 5GB
+    growth_rate: 500MB/day
+
+# Configuration des index à surveiller
+indexes:
+  unused_min_size: 100MB
+  duplicate_min_size: 100MB
+  
+# Configuration des verrous
+locks:
+  max_age: 5
+  frequency: 1
+
+# Configuration des sauvegardes
+backups:
+  check_enabled: true
+  max_age: 24
+  frequency: 60
+
+# Configuration des alertes
+alerts:
+  slack:
+    webhook_url: <%= ENV["SLACK_WEBHOOK_URL"] %>
+    channel: "#db-alerts"
+    
+  email:
+    from: <%= ENV["PGHERO_EMAIL_FROM"] %>
+    to: <%= ENV["PGHERO_EMAIL_TO"] %>
+    
+# Configuration de la rétention des données
+historical_metrics:
+  enabled: true
+  retention_period: 7
+
+# Configuration de la sécurité
+security:
+  statement_timeout: 10000  # 10 secondes
+  force_ssl: true
+  
+# Configuration des suggestions
+suggestions:
+  enabled: true
+  min_time_saved: 1  # minute
+  min_average_time: 50  # ms

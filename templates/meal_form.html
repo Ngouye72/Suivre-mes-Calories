@@ -1,0 +1,94 @@
+{% extends "index.html" %}
+
+{% block meal_form %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-plus-circle me-2"></i>
+                    Ajouter un Repas
+                </h5>
+                <form id="mealForm" class="mt-3">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Type de Repas</label>
+                            <select class="form-select" id="mealType" required>
+                                <option value="petit_dejeuner">Petit Déjeuner</option>
+                                <option value="dejeuner">Déjeuner</option>
+                                <option value="collation">Collation</option>
+                                <option value="diner">Dîner</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Calories</label>
+                            <input type="number" class="form-control" id="calories" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Protéines (g)</label>
+                            <input type="number" class="form-control" id="proteines" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Glucides (g)</label>
+                            <input type="number" class="form-control" id="glucides" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Lipides (g)</label>
+                            <input type="number" class="form-control" id="lipides" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Aliments (séparés par des virgules)</label>
+                            <input type="text" class="form-control" id="aliments" required>
+                        </div>
+                        <div class="col-12 mt-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>
+                                Ajouter le Repas
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('mealForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = {
+        meal_type: document.getElementById('mealType').value,
+        calories: parseInt(document.getElementById('calories').value),
+        proteines: parseInt(document.getElementById('proteines').value),
+        glucides: parseInt(document.getElementById('glucides').value),
+        lipides: parseInt(document.getElementById('lipides').value),
+        aliments: document.getElementById('aliments').value.split(',').map(item => item.trim())
+    };
+
+    try {
+        const response = await fetch('/api/tracking/log-meal', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+
+        if (response.ok) {
+            // Réinitialiser le formulaire
+            e.target.reset();
+            // Mettre à jour le dashboard
+            window.loadDashboard();
+            // Afficher un message de succès
+            alert('Repas ajouté avec succès !');
+        } else {
+            alert('Erreur lors de l\'ajout du repas');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert('Erreur lors de l\'ajout du repas');
+    }
+});
+</script>
+{% endblock %}

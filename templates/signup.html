@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card dashboard-card">
+                <div class="card-body">
+                    <h3 class="card-title text-center mb-4">
+                        <i class="fas fa-user-plus me-2"></i>
+                        Créer votre profil
+                    </h3>
+                    <form id="signupForm" class="needs-validation" novalidate>
+                        <!-- Informations personnelles -->
+                        <div class="row mb-4">
+                            <h5><i class="fas fa-info-circle me-2"></i>Informations personnelles</h5>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Mot de passe</label>
+                                <input type="password" class="form-control" id="password" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Âge</label>
+                                <input type="number" class="form-control" id="age" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Sexe</label>
+                                <select class="form-select" id="sexe" required>
+                                    <option value="">Choisir...</option>
+                                    <option value="homme">Homme</option>
+                                    <option value="femme">Femme</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Mesures corporelles -->
+                        <div class="row mb-4">
+                            <h5><i class="fas fa-weight me-2"></i>Mesures corporelles</h5>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Taille (cm)</label>
+                                <input type="number" class="form-control" id="taille" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Poids actuel (kg)</label>
+                                <input type="number" step="0.1" class="form-control" id="poids" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Poids cible (kg)</label>
+                                <input type="number" step="0.1" class="form-control" id="poids_cible" required>
+                            </div>
+                        </div>
+
+                        <!-- Niveau d'activité -->
+                        <div class="row mb-4">
+                            <h5><i class="fas fa-running me-2"></i>Niveau d'activité</h5>
+                            <div class="col-12 mb-3">
+                                <select class="form-select" id="niveau_activite" required>
+                                    <option value="">Choisir votre niveau d'activité...</option>
+                                    <option value="sedentaire">Sédentaire (peu ou pas d'exercice)</option>
+                                    <option value="leger">Légèrement actif (exercice léger 1-3 fois/semaine)</option>
+                                    <option value="modere">Modérément actif (exercice modéré 3-5 fois/semaine)</option>
+                                    <option value="actif">Très actif (exercice intense 6-7 fois/semaine)</option>
+                                    <option value="tres_actif">Extrêmement actif (exercice très intense, travail physique)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Objectifs -->
+                        <div class="row mb-4">
+                            <h5><i class="fas fa-bullseye me-2"></i>Objectifs</h5>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Type d'objectif</label>
+                                <select class="form-select" id="type_objectif" required>
+                                    <option value="">Choisir...</option>
+                                    <option value="perte">Perte de poids</option>
+                                    <option value="maintien">Maintien du poids</option>
+                                    <option value="prise">Prise de masse</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Délai (semaines)</label>
+                                <input type="number" class="form-control" id="delai_semaines" required>
+                            </div>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-check-circle me-2"></i>
+                                Créer mon profil
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('signupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = {
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
+        age: parseInt(document.getElementById('age').value),
+        sexe: document.getElementById('sexe').value,
+        taille: parseInt(document.getElementById('taille').value),
+        poids: parseFloat(document.getElementById('poids').value),
+        poids_cible: parseFloat(document.getElementById('poids_cible').value),
+        niveau_activite: document.getElementById('niveau_activite').value,
+        type_objectif: document.getElementById('type_objectif').value,
+        delai_semaines: parseInt(document.getElementById('delai_semaines').value)
+    };
+
+    try {
+        const response = await fetch('/api/auth/signup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            // Redirection vers le tableau de bord
+            window.location.href = '/dashboard';
+        } else {
+            const error = await response.json();
+            alert(error.message || 'Erreur lors de l\'inscription');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert('Erreur lors de l\'inscription');
+    }
+});
+</script>
+{% endblock %}

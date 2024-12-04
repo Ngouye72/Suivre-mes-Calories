@@ -1,0 +1,234 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": 1,
+  "links": [],
+  "panels": [
+    {
+      "title": "Vue d'ensemble utilisateurs",
+      "type": "row",
+      "panels": [
+        {
+          "title": "Utilisateurs Actifs",
+          "type": "stat",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "nutrition_active_users_total{timeframe='daily'}",
+              "legendFormat": "Quotidien"
+            },
+            {
+              "expr": "nutrition_active_users_total{timeframe='weekly'}",
+              "legendFormat": "Hebdomadaire"
+            },
+            {
+              "expr": "nutrition_active_users_total{timeframe='monthly'}",
+              "legendFormat": "Mensuel"
+            }
+          ]
+        },
+        {
+          "title": "Rétention Utilisateurs",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "nutrition_user_retention_rate",
+              "legendFormat": "{{cohort}} - {{period}}"
+            }
+          ]
+        },
+        {
+          "title": "Engagement Utilisateurs",
+          "type": "gauge",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "avg(nutrition_user_engagement_score)",
+              "legendFormat": "Score moyen"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Métriques Nutrition",
+      "type": "row",
+      "panels": [
+        {
+          "title": "Suivi des Repas",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "rate(nutrition_meal_logs_total[24h])",
+              "legendFormat": "{{meal_type}}"
+            }
+          ]
+        },
+        {
+          "title": "Adhérence Calorique",
+          "type": "heatmap",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "nutrition_calorie_goal_adherence",
+              "legendFormat": "{{user_segment}}"
+            }
+          ]
+        },
+        {
+          "title": "Distribution Changements Poids",
+          "type": "histogram",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "nutrition_weight_changes_kg",
+              "legendFormat": "{{goal_type}}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Performance ML",
+      "type": "row",
+      "panels": [
+        {
+          "title": "Précision Prédictions",
+          "type": "gauge",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "nutrition_ml_prediction_accuracy",
+              "legendFormat": "{{model_type}}"
+            }
+          ]
+        },
+        {
+          "title": "Adoption Recommandations",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "nutrition_recommendation_adoption_rate",
+              "legendFormat": "{{recommendation_type}}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Métriques Business",
+      "type": "row",
+      "panels": [
+        {
+          "title": "Abonnements Actifs",
+          "type": "stat",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "sum(nutrition_subscription_status{status='active'})",
+              "legendFormat": "Total"
+            }
+          ]
+        },
+        {
+          "title": "Revenus",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "nutrition_revenue_metrics",
+              "legendFormat": "{{metric_type}}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Santé Système",
+      "type": "row",
+      "panels": [
+        {
+          "title": "Latence API",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+              "legendFormat": "p95"
+            }
+          ]
+        },
+        {
+          "title": "Erreurs",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "sum(rate(http_requests_total{status=~\"5..\"}[5m]))",
+              "legendFormat": "Erreurs/s"
+            }
+          ]
+        },
+        {
+          "title": "Utilisation Ressources",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "container_memory_usage_bytes{container=~\"nutrition.*\"}",
+              "legendFormat": "Mémoire {{container}}"
+            },
+            {
+              "expr": "rate(container_cpu_usage_seconds_total{container=~\"nutrition.*\"}[5m])",
+              "legendFormat": "CPU {{container}}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 27,
+  "style": "dark",
+  "tags": ["nutrition", "monitoring"],
+  "templating": {
+    "list": [
+      {
+        "name": "timeframe",
+        "type": "custom",
+        "options": [
+          {"text": "24h", "value": "24h"},
+          {"text": "7d", "value": "7d"},
+          {"text": "30d", "value": "30d"}
+        ],
+        "current": {"text": "24h", "value": "24h"}
+      }
+    ]
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Nutrition App Overview",
+  "uid": "nutrition-overview",
+  "version": 1
+}

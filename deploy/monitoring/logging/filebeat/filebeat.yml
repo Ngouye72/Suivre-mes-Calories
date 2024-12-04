@@ -1,0 +1,80 @@
+filebeat.inputs:
+- type: container
+  paths:
+    - /var/lib/docker/containers/*/*.log
+  processors:
+    - add_docker_metadata:
+        host: "unix:///var/run/docker.sock"
+    - decode_json_fields:
+        fields: ["message"]
+        target: "json"
+        overwrite_keys: true
+
+- type: log
+  enabled: true
+  paths:
+    - /var/log/nutrition-app/*.log
+  fields:
+    type: nutrition-app
+  fields_under_root: true
+  json.keys_under_root: true
+  json.add_error_key: true
+
+processors:
+  - add_host_metadata:
+      when.not.contains.tags: forwarded
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+  - add_kubernetes_metadata: ~
+  
+  # Enrichissement des logs nutrition
+  - if:
+      equals:
+        type: nutrition-app
+    then:
+      - add_fields:
+          target: ''
+          fields:
+            app_version: "${APP_VERSION:1.0.0}"
+            environment: "${ENV:production}"
+  
+  # Traitement des logs d'erreur
+  - if:
+      contains:
+        message: "error"
+    then:
+      - add_tags:
+          tags: ["error"]
+          target: "tags"
+
+  # Traitement des logs de performance
+  - if:
+      regexp:
+        message: "duration.*ms"
+    then:
+      - add_tags:
+          tags: ["performance"]
+          target: "tags"
+
+output.logstash:
+  hosts: ["logstash:5044"]
+  ssl.enabled: false
+
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: /var/log/filebeat
+  name: filebeat
+  keepfiles: 7
+  permissions: 0644
+
+setup.kibana:
+  host: "kibana:5601"
+
+setup.dashboards.enabled: true
+setup.template.name: "nutrition"
+setup.template.pattern: "nutrition-*"
+
+monitoring.enabled: true
+monitoring.elasticsearch:
+  hosts: ["elasticsearch:9200"]

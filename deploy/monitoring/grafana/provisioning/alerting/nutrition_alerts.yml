@@ -1,0 +1,200 @@
+apiVersion: 1
+
+groups:
+  - name: NutritionApp
+    folder: Monitoring
+    interval: 1m
+    rules:
+      # API Performance
+      - name: High API Latency
+        condition: avg() > 1000
+        data:
+          - refId: A
+            datasourceUid: CloudWatch
+            model:
+              alias: ""
+              dimensions: {}
+              expression: ""
+              id: ""
+              matchExact: true
+              metricName: APILatency
+              namespace: NutritionApp
+              period: ""
+              refId: A
+              region: eu-west-1
+              statistics: ["Average"]
+        noDataState: OK
+        execErrState: Alerting
+        for: 5m
+        annotations:
+          summary: API latency élevée
+          description: La latence moyenne de l'API dépasse 1000ms
+        labels:
+          severity: warning
+          team: backend
+
+      # Error Rate
+      - name: High Error Rate
+        condition: sum() > 100
+        data:
+          - refId: A
+            datasourceUid: CloudWatch
+            model:
+              dimensions: {}
+              expression: ""
+              id: ""
+              matchExact: true
+              metricName: ErrorCount
+              namespace: NutritionApp
+              period: ""
+              refId: A
+              region: eu-west-1
+              statistics: ["Sum"]
+        noDataState: OK
+        execErrState: Alerting
+        for: 5m
+        annotations:
+          summary: Taux d'erreurs élevé
+          description: Plus de 100 erreurs détectées dans les 5 dernières minutes
+        labels:
+          severity: critical
+          team: backend
+
+      # Database Performance
+      - name: High Database Latency
+        condition: avg() > 500
+        data:
+          - refId: A
+            datasourceUid: CloudWatch
+            model:
+              alias: ""
+              dimensions: {}
+              expression: ""
+              id: ""
+              matchExact: true
+              metricName: DatabaseLatency
+              namespace: NutritionApp
+              period: ""
+              refId: A
+              region: eu-west-1
+              statistics: ["Average"]
+        noDataState: OK
+        execErrState: Alerting
+        for: 5m
+        annotations:
+          summary: Latence base de données élevée
+          description: La latence moyenne de la base de données dépasse 500ms
+        labels:
+          severity: warning
+          team: database
+
+      # Backup Monitoring
+      - name: Backup Failure
+        condition: sum() == 0
+        data:
+          - refId: A
+            datasourceUid: CloudWatch
+            model:
+              dimensions: {}
+              expression: ""
+              id: ""
+              matchExact: true
+              metricName: BackupSuccess
+              namespace: NutritionApp/Backups
+              period: ""
+              refId: A
+              region: eu-west-1
+              statistics: ["Sum"]
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 24h
+        annotations:
+          summary: Échec des backups
+          description: Aucun backup réussi dans les dernières 24 heures
+        labels:
+          severity: critical
+          team: devops
+
+      - name: Large Backup Size
+        condition: avg() > 10737418240  # 10 GB
+        data:
+          - refId: A
+            datasourceUid: CloudWatch
+            model:
+              dimensions: {}
+              expression: ""
+              id: ""
+              matchExact: true
+              metricName: BackupSize
+              namespace: NutritionApp/Backups
+              period: ""
+              refId: A
+              region: eu-west-1
+              statistics: ["Average"]
+        noDataState: OK
+        execErrState: Alerting
+        for: 1h
+        annotations:
+          summary: Taille de backup anormale
+          description: La taille du dernier backup dépasse 10 GB
+        labels:
+          severity: warning
+          team: devops
+
+      - name: Long Backup Duration
+        condition: avg() > 3600  # 1 hour
+        data:
+          - refId: A
+            datasourceUid: CloudWatch
+            model:
+              dimensions: {}
+              expression: ""
+              id: ""
+              matchExact: true
+              metricName: BackupDuration
+              namespace: NutritionApp/Backups
+              period: ""
+              refId: A
+              region: eu-west-1
+              statistics: ["Average"]
+        noDataState: OK
+        execErrState: Alerting
+        for: 30m
+        annotations:
+          summary: Durée de backup excessive
+          description: Le dernier backup a pris plus d'une heure
+        labels:
+          severity: warning
+          team: devops
+
+contact_points:
+  - name: DevOps Team
+    receivers:
+      - uid: slack-notifications
+        type: slack
+        settings:
+          url: ${SLACK_WEBHOOK_URL}
+          username: Grafana Alerting
+          icon_emoji: ":warning:"
+          mentionUsers: "@devops"
+          mentionGroups: ""
+          mentionChannel: ""
+          text: |-
+            {{ template "default.message" . }}
+            
+            *Severity:* {{ .CommonLabels.severity }}
+            *Team:* {{ .CommonLabels.team }}
+
+notification_policies:
+  - name: Default
+    group_by: ['alertname', 'team']
+    contact_point: DevOps Team
+    group_wait: 30s
+    group_interval: 5m
+    repeat_interval: 4h
+    routes:
+      - receiver: DevOps Team
+        matchers:
+          - severity = critical
+        group_wait: 0s
+        repeat_interval: 1h
