@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suivre mes Calories</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">Suivre mes Calories</a>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <!-- Formulaire des objectifs -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Définir mes objectifs</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="goals-form">
+                            <div class="mb-3">
+                                <label for="weight" class="form-label">Poids (kg)</label>
+                                <input type="number" class="form-control" id="weight" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="height" class="form-label">Taille (cm)</label>
+                                <input type="number" class="form-control" id="height" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="age" class="form-label">Âge</label>
+                                <input type="number" class="form-control" id="age" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="gender" class="form-label">Genre</label>
+                                <select class="form-control" id="gender" required>
+                                    <option value="male">Homme</option>
+                                    <option value="female">Femme</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="activity" class="form-label">Niveau d'activité</label>
+                                <select class="form-control" id="activity" required>
+                                    <option value="sedentary">Sédentaire</option>
+                                    <option value="light">Légèrement actif</option>
+                                    <option value="moderate">Modérément actif</option>
+                                    <option value="active">Très actif</option>
+                                    <option value="very_active">Extrêmement actif</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="goal" class="form-label">Objectif</label>
+                                <select class="form-control" id="goal" required>
+                                    <option value="lose">Perdre du poids</option>
+                                    <option value="maintain">Maintenir le poids</option>
+                                    <option value="gain">Prendre du poids</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Calculer mes objectifs</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tableau de bord -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Mes objectifs quotidiens</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="goals-display" style="display: none;">
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <h6>Calories</h6>
+                                    <p id="calorie-goal" class="h4">-</p>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <h6>Protéines (g)</h6>
+                                    <p id="protein-goal" class="h4">-</p>
+                                </div>
+                                <div class="col-6">
+                                    <h6>Glucides (g)</h6>
+                                    <p id="carb-goal" class="h4">-</p>
+                                </div>
+                                <div class="col-6">
+                                    <h6>Lipides (g)</h6>
+                                    <p id="fat-goal" class="h4">-</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Journal alimentaire -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Journal alimentaire</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="meal-form">
+                            <div class="mb-3">
+                                <label for="meal-type" class="form-label">Type de repas</label>
+                                <select class="form-control" id="meal-type" required>
+                                    <option value="breakfast">Petit-déjeuner</option>
+                                    <option value="lunch">Déjeuner</option>
+                                    <option value="dinner">Dîner</option>
+                                    <option value="snack">Collation</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="food-name" class="form-label">Aliment</label>
+                                <input type="text" class="form-control" id="food-name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="calories" class="form-label">Calories</label>
+                                <input type="number" class="form-control" id="calories" required>
+                            </div>
+                            <button type="submit" class="btn btn-success">Ajouter</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
